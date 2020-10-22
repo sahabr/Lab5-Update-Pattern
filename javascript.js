@@ -1,6 +1,6 @@
 const margin = {top:30, left:50, bottom:40, right:20};
 const width = 750 - margin.left - margin.right; 
-const height = 650 - margin.top - margin.bottom; 
+const height = 600 - margin.top - margin.bottom; 
 const svg = d3.select('.chart')
     .append('svg')
     .attr('width', width + margin.left + margin.right)
@@ -42,34 +42,67 @@ svg.append('text')
     .attr("transform", "rotate(-90)");
 
 
-let type = document.querySelector('#group-by').value;
-//console.log(type);
+let type = document.querySelector('#group-by');
 let direction=true;
 
 let select = document.querySelector('#group-by');
 let sort = document.querySelector('#sort');
 select.addEventListener('change',function(){
     type=this.value;
-    console.log(type);
     loadData(type);
 });
+
+let count=0;
 sort.addEventListener('click',function(){
     direction =!direction;
+    count=1;
     loadData(type);
 })
- 
-function update(data,type,sort){
+
+
+function update(data,type){
+    
+    //makes sure that the sort button is pressed at least one to sort the bars and alternate
+    if (count=1 && type=='revenue'){
+        if (direction==true){
+            coffee.sort(function(a,b){
+                return a.revenue-b.revenue;
+            });    
+        }
+        else {
+            coffee.sort(function(a,b){
+                return b.revenue-a.revenue;
+            });
+        }
+    }
+
+    if (count=1 && type=='stores'){
+        if (direction==true){
+            coffee.sort(function(a,b){
+                return a.stores-b.stores;
+            });    
+        }
+        else {
+            coffee.sort(function(a,b){
+                return b.stores-a.stores;
+            });
+        }
+    }
 
     xScale.domain(coffee.map(d=>d.company))
-    yScale.domain(d3.extent(data,d=>d[type]))
+    yScale.domain([0,d3.max(data,d=>d[type])])
 
-    const bars = svg.selectAll('.bars')
+
+    const bar = svg.selectAll('.bars')
         .data(coffee);
 
-    bars.enter()
+    bar.enter()
         .append('rect')
-        //.merge()
+        .attr('class','bars')
+        .attr("opacity", 0)
+        .merge(bar)
         .transition()
+        .delay(200)
         .duration(1000)
         .attr('width', xScale.bandwidth())
         .attr('height', function(d){
@@ -77,9 +110,12 @@ function update(data,type,sort){
         })
         .attr('x',d=>xScale(d.company))
         .attr('y',d=> yScale(d[type]))
-        .attr('fill','blue');
+        .attr('fill','blue')
+        .attr("opacity", 1.0);
 
-        bars.exit().remove();
+        bar.exit().remove();
+
+    
 
     const xAxis = d3.axisBottom()
         .scale(xScale);
@@ -106,10 +142,8 @@ let coffee;
 function loadData(type){
 d3.csv('coffee-house-chains.csv', d3.autoType).then(data=>{
     coffee=data;
-    console.log(coffee);    
-    update(coffee,type,sort);
+    //console.log(coffee); 
+    update(coffee,type);    
     
 });
 }
-
-
