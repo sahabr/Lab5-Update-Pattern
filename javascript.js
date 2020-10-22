@@ -110,7 +110,7 @@ function update(data,type){
         })
         .attr('x',d=>xScale(d.company))
         .attr('y',d=> yScale(d[type]))
-        .attr('fill','blue')
+        .attr('fill','#865F3A')
         .attr("opacity", 1.0);
 
         bar.exit().remove();
@@ -147,3 +147,4 @@ d3.csv('coffee-house-chains.csv', d3.autoType).then(data=>{
     
 });
 }
+
